@@ -42,13 +42,19 @@ class JwtKeysProvider {
     }
 
     private Algorithm loadAlgorithm(KeyFactory kf, String privateKeyStr, String publicKeyStr) throws Exception {
-        byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyStr);
-        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-        ECPrivateKey privateKey = (ECPrivateKey) kf.generatePrivate(privateKeySpec);
-
         byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyStr);
         X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
         ECPublicKey publicKey = (ECPublicKey) kf.generatePublic(publicKeySpec);
+
+        // Return algorithm with public key only if no private key provided
+        if (privateKeyStr == null || privateKeyStr.trim().isEmpty()) {
+            return Algorithm.ECDSA256(publicKey, null);
+        }
+
+        // Return algorithm with both keys
+        byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyStr);
+        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+        ECPrivateKey privateKey = (ECPrivateKey) kf.generatePrivate(privateKeySpec);
 
         return Algorithm.ECDSA256(publicKey, privateKey);
     }

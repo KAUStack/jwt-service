@@ -15,7 +15,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtUtils {
 
-    private JwtKeysProvider jwtKeysProvider;
+    private final JwtKeysProvider jwtKeysProvider;
 
     private DecodedJWT decodeToken(String token) {
 
