@@ -1,11 +1,14 @@
 package com.kaustack.jwt;
 
-import com.auth0.jwt.algorithms.Algorithm;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.auth0.jwt.algorithms.Algorithm;
+
+import lombok.Getter;
+
 import jakarta.annotation.PostConstruct;
+
 import java.security.KeyFactory;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
@@ -14,34 +17,41 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 @Component
-public class JwtKeysProvider {
+class JwtKeysProvider {
 
     @Getter
-    private Algorithm algorithm;
+    private Algorithm accessAlgorithm;
+    @Getter
+    private Algorithm refreshAlgorithm;
 
-    private ECPrivateKey privateKey;
-    private ECPublicKey publicKey;
+    @Value("${jwt.access-token.private-key}")
+    private String accessPrivateKeyStr;
+    @Value("${jwt.access-token.public-key}")
+    private String accessPublicKeyStr;
 
-    @Value("${jwt.private-key}")
-    private String privateKeyStr;
-    @Value("${jwt.public-key}")
-    private String publicKeyStr;
+    @Value("${jwt.refresh-token.private-key}")
+    private String refreshPrivateKeyStr;
+    @Value("${jwt.refresh-token.public-key}")
+    private String refreshPublicKeyStr;
 
     @PostConstruct
     public void init() throws Exception {
         KeyFactory kf = KeyFactory.getInstance("EC");
-        
-        // Load private key
+
+        this.accessAlgorithm = loadAlgorithm(kf, accessPrivateKeyStr, accessPublicKeyStr);
+        this.refreshAlgorithm = loadAlgorithm(kf, refreshPrivateKeyStr, refreshPublicKeyStr);
+    }
+
+    private Algorithm loadAlgorithm(KeyFactory kf, String privateKeyStr, String publicKeyStr) throws Exception {
         byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyStr);
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-        this.privateKey = (ECPrivateKey) kf.generatePrivate(privateKeySpec);
-        
-        // Load public key
+        ECPrivateKey privateKey = (ECPrivateKey) kf.generatePrivate(privateKeySpec);
+
         byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyStr);
         X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
-        this.publicKey = (ECPublicKey) kf.generatePublic(publicKeySpec);
-        
-        this.algorithm = Algorithm.ECDSA256(publicKey, privateKey);
+        ECPublicKey publicKey = (ECPublicKey) kf.generatePublic(publicKeySpec);
+
+        return Algorithm.ECDSA256(publicKey, privateKey);
     }
 
 }

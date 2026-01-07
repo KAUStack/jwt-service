@@ -3,6 +3,7 @@ package com.kaustack.jwt;
 import org.springframework.stereotype.Component;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 import lombok.RequiredArgsConstructor;
@@ -15,9 +16,17 @@ import java.util.UUID;
 public class JwtUtils {
 
     private JwtKeysProvider jwtKeysProvider;
-    
+
     private DecodedJWT decodeToken(String token) {
-        return JWT.require(jwtKeysProvider.getAlgorithm())
+
+        DecodedJWT unverifiedToken = JWT.decode(token);
+        String type = unverifiedToken.getClaim("type").asString();
+
+        Algorithm algorithm = "access".equals(type)
+                ? jwtKeysProvider.getAccessAlgorithm()
+                : jwtKeysProvider.getRefreshAlgorithm();
+
+        return JWT.require(algorithm)
                 .build()
                 .verify(token);
     }
@@ -31,10 +40,17 @@ public class JwtUtils {
         return UUID.fromString(id);
     }
 
-    public boolean validateToken(String token) {
+    public String extractTokenType(String token) {
+        return JWT.decode(token).getClaim("type").asString();
+    }
+
+    public boolean validateToken(String token, TokenType expectedType) {
         try {
             DecodedJWT decoded = decodeToken(token);
-            return !decoded.getExpiresAt().before(new Date());
+            boolean notExpired = !decoded.getExpiresAt().before(new Date());
+            boolean correctType = expectedType == null
+                    || expectedType.getValue().equals(decoded.getClaim("type").asString());
+            return notExpired && correctType;
         } catch (Exception e) {
             return false;
         }
