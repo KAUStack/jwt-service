@@ -1,5 +1,7 @@
 package com.kaustack.jwt;
 
+import org.springframework.stereotype.Component;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
@@ -7,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Date;
 
+
+
+@Component
 @RequiredArgsConstructor
 public class JwtGenerator {
 
