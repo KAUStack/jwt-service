@@ -1,6 +1,5 @@
 package com.kaustack.jwt;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.auth0.jwt.JWT;
@@ -14,24 +13,18 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtGenerator {
 
-    private JwtKeysProvider jwtKeysProvider;
-
-    @Value("${jwt.access-token.expiration}")
-    private long accessTokenExpiration;
-
-    @Value("${jwt.refresh-token.expiration}")
-    private long refreshTokenExpiration;
-
-    @Value("${jwt.issuer}")
-    private String issuer;
+    private final JwtKeysProvider jwtKeysProvider;
+    private final JwtProperties jwtProperties;
 
     public String generateToken(TokenType type, String id, String name, String email, String gender) {
-        long expiration = type == TokenType.ACCESS ? accessTokenExpiration : refreshTokenExpiration;
+        long expiration = type == TokenType.ACCESS
+                ? jwtProperties.getAccessToken().getExpiration()
+                : jwtProperties.getRefreshToken().getExpiration();
 
         var jwtBuilder = JWT.create()
                 .withSubject(id)
                 .withClaim("type", type.getValue())
-                .withIssuer(issuer)
+                .withIssuer(jwtProperties.getIssuer())
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + expiration));
 

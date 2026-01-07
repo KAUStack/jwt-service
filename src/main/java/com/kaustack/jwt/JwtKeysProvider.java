@@ -1,11 +1,11 @@
 package com.kaustack.jwt;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.auth0.jwt.algorithms.Algorithm;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import jakarta.annotation.PostConstruct;
 
@@ -17,29 +17,28 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 @Component
+@RequiredArgsConstructor
 class JwtKeysProvider {
+
+    private final JwtProperties jwtProperties;
 
     @Getter
     private Algorithm accessAlgorithm;
     @Getter
     private Algorithm refreshAlgorithm;
 
-    @Value("${jwt.access-token.private-key}")
-    private String accessPrivateKeyStr;
-    @Value("${jwt.access-token.public-key}")
-    private String accessPublicKeyStr;
-
-    @Value("${jwt.refresh-token.private-key}")
-    private String refreshPrivateKeyStr;
-    @Value("${jwt.refresh-token.public-key}")
-    private String refreshPublicKeyStr;
-
     @PostConstruct
     public void init() throws Exception {
         KeyFactory kf = KeyFactory.getInstance("EC");
 
-        this.accessAlgorithm = loadAlgorithm(kf, accessPrivateKeyStr, accessPublicKeyStr);
-        this.refreshAlgorithm = loadAlgorithm(kf, refreshPrivateKeyStr, refreshPublicKeyStr);
+        this.accessAlgorithm = loadAlgorithm(
+                kf,
+                jwtProperties.getAccessToken().getPrivateKey(),
+                jwtProperties.getAccessToken().getPublicKey());
+        this.refreshAlgorithm = loadAlgorithm(
+                kf,
+                jwtProperties.getRefreshToken().getPrivateKey(),
+                jwtProperties.getRefreshToken().getPublicKey());
     }
 
     private Algorithm loadAlgorithm(KeyFactory kf, String privateKeyStr, String publicKeyStr) throws Exception {
