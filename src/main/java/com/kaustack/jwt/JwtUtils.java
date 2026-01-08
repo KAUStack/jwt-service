@@ -36,7 +36,7 @@ public class JwtUtils {
     }
 
     public UUID extractUserId(String token) {
-        String id = extractClaim(token, "subject");
+        String id = extractClaim(token, "sub");
         return UUID.fromString(id);
     }
 
