@@ -42,6 +42,12 @@ class JwtKeysProvider {
     }
 
     private Algorithm loadAlgorithm(KeyFactory kf, String privateKeyStr, String publicKeyStr) throws Exception {
+        // Return null for decode-only mode when no keys are provided
+        if ((publicKeyStr == null || publicKeyStr.trim().isEmpty()) &&
+                (privateKeyStr == null || privateKeyStr.trim().isEmpty())) {
+            return null;
+        }
+
         byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyStr);
         X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
         ECPublicKey publicKey = (ECPublicKey) kf.generatePublic(publicKeySpec);

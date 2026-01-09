@@ -26,6 +26,11 @@ public class JwtUtils {
                 ? jwtKeysProvider.getAccessAlgorithm()
                 : jwtKeysProvider.getRefreshAlgorithm();
 
+        // If no algorithm is available (decode-only mode), return unverified token
+        if (algorithm == null) {
+            return unverifiedToken;
+        }
+
         return JWT.require(algorithm)
                 .build()
                 .verify(token);
