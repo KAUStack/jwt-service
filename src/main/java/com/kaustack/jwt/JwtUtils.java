@@ -8,6 +8,8 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 
 import lombok.RequiredArgsConstructor;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
@@ -43,6 +45,13 @@ public class JwtUtils {
     public UUID extractUserId(String token) {
         String id = extractClaim(token, "sub");
         return UUID.fromString(id);
+    }
+
+    public Duration extractMaxAge(String token) {
+        long expSeconds = Long.parseLong(extractClaim(token, "exp"));
+        long nowSeconds = Instant.now().getEpochSecond();
+        long maxAgeSeconds = Math.max(0, expSeconds - nowSeconds);
+        return Duration.ofSeconds(maxAgeSeconds);
     }
 
     public String extractTokenType(String token) {
