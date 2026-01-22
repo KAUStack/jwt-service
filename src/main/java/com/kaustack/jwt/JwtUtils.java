@@ -1,5 +1,6 @@
 package com.kaustack.jwt;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.auth0.jwt.JWT;
@@ -18,6 +19,7 @@ public class JwtUtils {
     private final String token;
 
     // Constructor for Spring component usage (with verification)
+    @Autowired
     public JwtUtils(JwtKeysProvider jwtKeysProvider) {
         this.jwtKeysProvider = jwtKeysProvider;
         this.token = null;

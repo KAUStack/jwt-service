@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.kaustack</groupId>
 	<artifactId>jwt</artifactId>
-	<version>1.2.2</version>
+	<version>1.2.3</version>
 	<name>KAUStack JWT Library</name>
 	<description>JWT token generation and validation library for KAUStack</description>
 	<url/>
