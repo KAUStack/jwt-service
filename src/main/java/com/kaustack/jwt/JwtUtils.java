@@ -55,7 +55,29 @@ public class JwtUtils {
     }
 
     public String extractClaim(String token, String claimName) {
-        return decodeToken(token).getClaim(claimName).asString();
+        var claim = decodeToken(token).getClaim(claimName);
+
+        if (claim.isMissing() || claim.isNull()) {
+            return null;
+        }
+
+        String value = claim.asString();
+        if (value != null) {
+            return value;
+        }
+
+        Long longValue = claim.asLong();
+        if (longValue != null) {
+            return String.valueOf(longValue);
+        }
+
+        Boolean boolValue = claim.asBoolean();
+        if (boolValue != null) {
+            return String.valueOf(boolValue);
+        }
+
+        // Fallback for objects/arrays
+        return claim.toString();
     }
 
     public UUID extractUserId(String token) {
@@ -71,7 +93,7 @@ public class JwtUtils {
     }
 
     public String extractTokenType(String token) {
-        return JWT.decode(token).getClaim("type").asString();
+        return extractClaim(token, "type");
     }
 
     public String extractEmail(String token) {
