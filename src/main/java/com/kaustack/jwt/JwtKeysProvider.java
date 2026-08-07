@@ -26,31 +26,38 @@ class JwtKeysProvider {
     private Algorithm accessAlgorithm;
     @Getter
     private Algorithm refreshAlgorithm;
+    @Getter
+    private ECPublicKey accessPublicKey;
 
     @PostConstruct
     public void init() throws Exception {
         KeyFactory kf = KeyFactory.getInstance("EC");
 
+        this.accessPublicKey = parsePublicKey(kf, jwtProperties.getAccessToken().getPublicKey());
+
         this.accessAlgorithm = loadAlgorithm(
                 kf,
                 jwtProperties.getAccessToken().getPrivateKey(),
-                jwtProperties.getAccessToken().getPublicKey());
+                this.accessPublicKey);
         this.refreshAlgorithm = loadAlgorithm(
                 kf,
                 jwtProperties.getRefreshToken().getPrivateKey(),
-                jwtProperties.getRefreshToken().getPublicKey());
+                parsePublicKey(kf, jwtProperties.getRefreshToken().getPublicKey()));
     }
 
-    private Algorithm loadAlgorithm(KeyFactory kf, String privateKeyStr, String publicKeyStr) throws Exception {
-        // Return null for decode-only mode when no keys are provided
-        if ((publicKeyStr == null || publicKeyStr.trim().isEmpty()) &&
-                (privateKeyStr == null || privateKeyStr.trim().isEmpty())) {
+    private ECPublicKey parsePublicKey(KeyFactory kf, String publicKeyStr) throws Exception {
+        if (publicKeyStr == null || publicKeyStr.trim().isEmpty()) {
             return null;
         }
-
         byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyStr);
-        X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
-        ECPublicKey publicKey = (ECPublicKey) kf.generatePublic(publicKeySpec);
+        return (ECPublicKey) kf.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
+    }
+
+    private Algorithm loadAlgorithm(KeyFactory kf, String privateKeyStr, ECPublicKey publicKey) throws Exception {
+        // Return null for decode-only mode when no keys are provided
+        if (publicKey == null && (privateKeyStr == null || privateKeyStr.trim().isEmpty())) {
+            return null;
+        }
 
         // Return algorithm with public key only if no private key provided
         if (privateKeyStr == null || privateKeyStr.trim().isEmpty()) {
@@ -66,3 +73,4 @@ class JwtKeysProvider {
     }
 
 }
+

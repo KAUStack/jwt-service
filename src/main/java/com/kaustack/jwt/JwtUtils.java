@@ -6,10 +6,13 @@ import org.springframework.stereotype.Component;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.nimbusds.jose.jwk.ECKey;
 
+import java.security.interfaces.ECPublicKey;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -118,6 +121,28 @@ public class JwtUtils {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public ECPublicKey getAccessPublicKey() {
+        if (jwtKeysProvider == null) {
+            throw new IllegalStateException(
+                    "No JwtKeysProvider available. getAccessPublicKey() requires the Spring-managed JwtUtils bean.");
+        }
+        return jwtKeysProvider.getAccessPublicKey();
+    }
+
+    public Map<String, Object> getAccessPublicKeyAsJwk() {
+        ECPublicKey key = getAccessPublicKey();
+        if (key == null) {
+            return null;
+        }
+        ECKey jwk = new com.nimbusds.jose.jwk.ECKey.Builder(
+                com.nimbusds.jose.jwk.Curve.P_256, key)
+                .keyID("access")
+                .keyUse(com.nimbusds.jose.jwk.KeyUse.SIGNATURE)
+                .algorithm(com.nimbusds.jose.JWSAlgorithm.ES256)
+                .build();
+        return jwk.toJSONObject();
     }
 
     // Overloaded methods that use the stored token
