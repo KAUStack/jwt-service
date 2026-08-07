@@ -28,7 +28,8 @@ public class JwtGenerator {
                                 .withClaim("type", type.getValue())
                                 .withIssuer(jwtProperties.getIssuer())
                                 .withIssuedAt(new Date())
-                                .withExpiresAt(new Date(System.currentTimeMillis() + expiration));
+                                .withExpiresAt(new Date(System.currentTimeMillis() + expiration))
+                                .withKeyId(type == TokenType.ACCESS ? "access" : "refresh");
 
                 if (type == TokenType.ACCESS) {
                         jwtBuilder
