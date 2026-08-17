@@ -12,6 +12,7 @@ import java.security.interfaces.ECPublicKey;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -109,6 +110,15 @@ public class JwtUtils {
 
     public String extractGender(String token) {
         return extractClaim(token, "gender");
+    }
+
+    public List<String> extractFlags(String token) {
+        var claim = decodeToken(token).getClaim("flags");
+        if (claim.isMissing() || claim.isNull()) {
+            return List.of();
+        }
+        List<String> flags = claim.asList(String.class);
+        return flags == null ? List.of() : flags;
     }
 
     public boolean validateToken(String token, TokenType expectedType) {
@@ -209,5 +219,13 @@ public class JwtUtils {
                     "No token available. Use the constructor with token parameter or call extractGender(String token)");
         }
         return extractGender(token);
+    }
+
+    public List<String> extractFlags() {
+        if (token == null) {
+            throw new IllegalStateException(
+                    "No token available. Use the constructor with token parameter or call extractFlags(String token)");
+        }
+        return extractFlags(token);
     }
 }
