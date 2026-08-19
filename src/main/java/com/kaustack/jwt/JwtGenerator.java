@@ -8,6 +8,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 
 
@@ -19,6 +20,11 @@ public class JwtGenerator {
         private final JwtProperties jwtProperties;
 
         public String generateToken(TokenType type, String id, String name, String email, String gender) {
+                return generateToken(type, id, name, email, gender, null);
+        }
+
+        public String generateToken(TokenType type, String id, String name, String email, String gender,
+                        List<String> flags) {
                 long expiration = type == TokenType.ACCESS
                                 ? jwtProperties.getAccessToken().getExpiration()
                                 : jwtProperties.getRefreshToken().getExpiration();
@@ -35,7 +41,8 @@ public class JwtGenerator {
                         jwtBuilder
                                         .withClaim("name", name)
                                         .withClaim("email", email)
-                                        .withClaim("gender", gender);
+                                        .withClaim("gender", gender)
+                                        .withClaim("flags", flags == null ? List.of() : flags);
                 }
 
                 Algorithm algorithm = type == TokenType.ACCESS
