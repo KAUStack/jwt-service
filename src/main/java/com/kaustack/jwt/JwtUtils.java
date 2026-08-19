@@ -114,11 +114,11 @@ public class JwtUtils {
     }
 
     public List<String> extractFlags(String token) {
-        var claim = decodeToken(token).getClaim("flags");
-        if (claim.isMissing() || claim.isNull()) {
-            return List.of();
-        }
         try {
+            var claim = decodeToken(token).getClaim("flags");
+            if (claim.isMissing() || claim.isNull()) {
+                return List.of();
+            }
             List<String> flags = claim.asList(String.class);
             return flags == null ? List.of() : flags;
         } catch (JWTDecodeException e) {

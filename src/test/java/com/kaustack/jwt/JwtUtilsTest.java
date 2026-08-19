@@ -37,6 +37,11 @@ class JwtUtilsTest {
     }
 
     @Test
+    void extractFlagsReturnsEmptyListWhenTokenIsMalformed() {
+        assertEquals(List.of(), new JwtUtils("not-a-jwt").extractFlags());
+    }
+
+    @Test
     void extractFlagsReturnsEmptyListWhenClaimIsMissing() {
         String token = tokenWithPayload("{\"type\":\"access\"}");
 
