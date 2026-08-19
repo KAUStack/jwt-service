@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.nimbusds.jose.jwk.ECKey;
 
@@ -117,8 +118,12 @@ public class JwtUtils {
         if (claim.isMissing() || claim.isNull()) {
             return List.of();
         }
-        List<String> flags = claim.asList(String.class);
-        return flags == null ? List.of() : flags;
+        try {
+            List<String> flags = claim.asList(String.class);
+            return flags == null ? List.of() : flags;
+        } catch (JWTDecodeException e) {
+            return List.of();
+        }
     }
 
     public boolean validateToken(String token, TokenType expectedType) {
